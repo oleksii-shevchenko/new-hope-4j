@@ -16,9 +16,9 @@ import static java.util.Arrays.fill;
 public class Shake {
     private static final int ROUNDS = 24;
 
-    private static final int STATE_SIZE = 25;
+    public static final int STATE_SIZE = 25;
 
-    private static final int SHAKE128_RATE = 168;
+    public static final int SHAKE128_RATE = 168;
 
     private static final int SHAKE256_RATE = 136;
 
@@ -416,7 +416,7 @@ public class Shake {
      * @param state Keccak step
      * @param input Input message
      */
-    private static void shake128Absorb(long[] state, byte[] input) {
+    public static void shake128Absorb(long[] state, byte[] input) {
         keccakAbsorb(state, SHAKE128_RATE, input, (byte) 0x1F);
     }
 
@@ -429,7 +429,7 @@ public class Shake {
      * @param blocks Number of blocks to be squeezed
      * @param state Keccak state
      */
-    void shake128SqueezeBlocks(byte[] output, int blocks, long[] state) {
+    public static void shake128SqueezeBlocks(byte[] output, int blocks, long[] state) {
         keccakSqueezeBlocks(output, blocks, state, SHAKE128_RATE);
     }
 
@@ -455,9 +455,5 @@ public class Shake {
             keccakSqueezeBlocks(temp, 1, state, SHAKE256_RATE);
             arraycopy(temp, 0, output, SHAKE256_RATE * blocks, remaining);
         }
-    }
-
-    public static void shake256(byte[] output, byte[] input) {
-        shake256(output, output.length, input);
     }
 }
