@@ -13,7 +13,7 @@ import dev.flanker.newhope.spec.NewHopeSpec;
 import java.security.SecureRandom;
 import java.util.Arrays;
 
-public class NewHopeCipher implements Cipher {
+public final class NewHopeCipher implements Cipher {
     private final SecureRandom secureRandom;
     private final NewHopeSpec spec;
 
@@ -45,6 +45,7 @@ public class NewHopeCipher implements Cipher {
 
     @Override
     public byte[] encrypt(byte[] message, PublicKey key) {
+        checkLength(key.b().length, spec.n());
         checkLength(message.length, 32);
 
         int q = spec.q();
@@ -69,11 +70,11 @@ public class NewHopeCipher implements Cipher {
 
     @Override
     public byte[] decrypt(byte[] ciphertext, PrivateKey key) {
-        Encoder.Pair<int[], byte[]> decodeCiphertext = Encoder.decodeCihpertext(ciphertext);
+        Encoder.Pair<int[], byte[]> decodeCiphertext = Encoder.decodeCihpertext(ciphertext, spec.n());
         int[] v = Encoder.decompress(decodeCiphertext.getRight(), spec.n(), spec.q());
         int[] t = Poly.inverseNnt(Poly.scalarMultiplication(decodeCiphertext.getLeft(), key.s(), spec.q()), spec);
         byte[] message = Encoder.decodeMessage(Poly.subtract(v, t, spec.q()), spec.q());
-        return new byte[0];
+        return message;
     }
 
     private void checkLength(int actual, int required) {

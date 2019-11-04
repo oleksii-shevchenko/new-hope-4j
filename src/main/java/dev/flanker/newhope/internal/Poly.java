@@ -5,7 +5,9 @@ import dev.flanker.newhope.spec.NewHopeSpec;
 
 import java.math.BigInteger;
 
-public class Poly {
+public final class Poly {
+    private Poly() { }
+
     public static int[] polyBitReverse(int[] polynomial) {
         int[] reverse = new int[polynomial.length];
         int logLength = Integer.highestOneBit(polynomial.length);

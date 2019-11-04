@@ -7,9 +7,11 @@ import java.security.SecureRandom;
 
 import static java.lang.System.arraycopy;
 
-public class Noise {
+public final class Noise {
     private static int EXT_SEED_SIZE = 34;
     private static int BUFFER_SIZE = 128;
+
+    private Noise() { }
 
     public static int[] sample(byte[] seed, int nonce, NewHopeSpec spec) {
         return sample(seed, nonce, spec.q(), spec.n());

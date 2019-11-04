@@ -2,7 +2,12 @@ package dev.flanker.newhope.internal;
 
 import java.util.Arrays;
 
-public class Encoder {
+import dev.flanker.newhope.api.PublicKey;
+import dev.flanker.newhope.chiper.NewHopePublicKey;
+
+public final class Encoder {
+    private Encoder() { }
+
     public static byte[] encodePublicKey(int[] poly, byte[] publicSeed, int q) {
         byte[] r = new byte[(7 * poly.length) / 4 + 32];
         byte[] encodedPoly = encodePolynomial(poly, q);
@@ -124,7 +129,7 @@ public class Encoder {
         return new Pair<>(poly, Arrays.copyOfRange(ciphertext, 7 * n / 4, ciphertext.length));
     }
 
-    private static int[] decodePolynomial(byte[] v, int n) {
+    public static int[] decodePolynomial(byte[] v, int n) {
         int[] r = new int[n];
         for (int i = 0; i < (n >>> 2); i++) {
             r[4 * i] = Byte.toUnsignedInt(v[7 * i]) | ((Byte.toUnsignedInt(v[7 * i + 1]) & 0x3f) << 8);
@@ -135,11 +140,17 @@ public class Encoder {
         return r;
     }
 
+    public static PublicKey decodePublicKey(byte[] encoded, int n) {
+        int[] b = decodePolynomial(Arrays.copyOfRange(encoded, 0, (7 * n) / 4), n);
+        byte[] publicSeed = Arrays.copyOfRange(encoded, (7 * n) / 4, encoded.length);
+        return new NewHopePublicKey(b, publicSeed);
+    }
+
     public static class Pair<T, K> {
         private final T left;
         private final K right;
 
-        public Pair(T left, K right) {
+        Pair(T left, K right) {
             this.left = left;
             this.right = right;
         }
@@ -151,5 +162,13 @@ public class Encoder {
         public K getRight() {
             return right;
         }
+    }
+
+    public static int resolvePolyLength(byte[] encoded) {
+        return (4 * encoded.length) / 7;
+    }
+
+    public static int resolvePublicKeyN(byte[] encoded) {
+        return (4 * (encoded.length - 32)) / 7;
     }
 }

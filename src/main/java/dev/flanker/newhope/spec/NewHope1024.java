@@ -1,18 +1,22 @@
 package dev.flanker.newhope.spec;
 
 @SuppressWarnings("FieldCanBeLocal")
-public class NewHope1024 implements NewHopeSpec {
-    private static int N = 1024;
-    private static int LOG_N = 10;
+public final class NewHope1024 implements NewHopeSpec {
+    private static final NewHope1024 INSTANCE = new NewHope1024();
 
-    private static int Q = 12289;
-    private static int K = 8;
-    private static int G = 7;
-    private static int W = 49;
+    private static final int N = 1024;
+    private static final int LOG_N = 10;
 
-    private static int INV_G = 8778;
-    private static int INV_W = 1254;
-    private static int INV_N = 12277;
+    private static final int Q = 12289;
+    private static final int K = 8;
+    private static final int G = 7;
+    private static final int W = 49;
+
+    private static final int INV_G = 8778;
+    private static final int INV_W = 1254;
+    private static final int INV_N = 12277;
+
+    private NewHope1024() { }
 
     @Override
     public int n() {
@@ -57,5 +61,9 @@ public class NewHope1024 implements NewHopeSpec {
     @Override
     public int invN() {
         return INV_N;
+    }
+
+    public static NewHope1024 getInstance() {
+        return INSTANCE;
     }
 }
