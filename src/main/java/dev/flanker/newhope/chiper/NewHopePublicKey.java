@@ -1,6 +1,8 @@
 package dev.flanker.newhope.chiper;
 
 import dev.flanker.newhope.api.PublicKey;
+import dev.flanker.newhope.internal.Encoder;
+import dev.flanker.newhope.spec.NewHopeSpec;
 
 public final class NewHopePublicKey implements PublicKey {
     private final int[] b;
@@ -19,5 +21,10 @@ public final class NewHopePublicKey implements PublicKey {
     @Override
     public byte[] publicSeed() {
         return publicSeed;
+    }
+
+    @Override
+    public byte[] encode() {
+        return Encoder.encodePublicKey(b, publicSeed, NewHopeSpec.Q);
     }
 }

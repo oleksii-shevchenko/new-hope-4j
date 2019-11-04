@@ -6,8 +6,6 @@ public final class NewHope512 implements NewHopeSpec {
     private static final int N = 512;
     private static final int LOG_N = 9;
 
-    private static final int Q = 12289;
-    private static final int K = 8;
     private static final int G = 10968;
     private static final int W = 3;
 
@@ -25,16 +23,6 @@ public final class NewHope512 implements NewHopeSpec {
     @Override
     public int logN() {
         return LOG_N;
-    }
-
-    @Override
-    public int q() {
-        return Q;
-    }
-
-    @Override
-    public int k() {
-        return K;
     }
 
     @Override

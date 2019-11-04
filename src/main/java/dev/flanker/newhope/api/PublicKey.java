@@ -4,4 +4,6 @@ public interface PublicKey {
     int[] b();
 
     byte[] publicSeed();
+
+    byte[] encode();
 }
