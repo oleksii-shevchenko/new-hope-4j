@@ -456,4 +456,8 @@ public class Shake {
             arraycopy(temp, 0, output, SHAKE256_RATE * blocks, remaining);
         }
     }
+
+    public static void shake256(byte[] output, byte[] input) {
+        shake256(output, output.length, input);
+    }
 }
