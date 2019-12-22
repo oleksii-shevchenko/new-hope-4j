@@ -4,7 +4,7 @@ import dev.flanker.newhope.spec.NewHopeSpec;
 
 import java.util.Map;
 
-public class Ntt {
+public final class Ntt {
     private static Map<NewHopeSpec, int[][]> PRECOMPUTED = Map.of(
             NewHopeSpec.NEW_HOPE_512, precomputedNttCoefficient(NewHopeSpec.NEW_HOPE_512),
             NewHopeSpec.NEW_HOPE_1024, precomputedNttCoefficient(NewHopeSpec.NEW_HOPE_1024)
@@ -14,6 +14,8 @@ public class Ntt {
             NewHopeSpec.NEW_HOPE_512, precomputedInverseNttCoefficient(NewHopeSpec.NEW_HOPE_512),
             NewHopeSpec.NEW_HOPE_1024, precomputedInverseNttCoefficient(NewHopeSpec.NEW_HOPE_1024)
     );
+
+    private Ntt() { }
 
     public static int[] direct(int[] poly, NewHopeSpec spec) {
         if (!PRECOMPUTED.containsKey(spec)) {

@@ -3,8 +3,10 @@ package dev.flanker.newhope.internal;
 import dev.flanker.newhope.keccak.Shake;
 import dev.flanker.newhope.spec.NewHopeSpec;
 
-public class Poly {
+public final class Poly {
     private static int EXTENDED_SEED_SIZE = 33;
+
+    private Poly() { }
 
     public static int[] polyBitReverse(int[] polynomial, NewHopeSpec spec) {
         int[] reverse = new int[spec.n];

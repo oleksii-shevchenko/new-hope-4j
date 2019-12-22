@@ -6,9 +6,11 @@ import dev.flanker.newhope.spec.NewHopeSpec;
 
 import java.util.Arrays;
 
-public class Encoder {
+public final class Encoder {
     private static final int MESSAGE_LENGTH = 32;
     public static final int PUBLIC_SEED_LENGTH = 32;
+
+    private Encoder() { }
 
     public static byte[] encodePolynomial(int[] poly, NewHopeSpec spec) {
         byte[] r = new byte[encodedPolynomialLength(spec)];

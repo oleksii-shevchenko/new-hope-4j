@@ -13,7 +13,7 @@ package dev.flanker.newhope.keccak;
 import static java.lang.System.arraycopy;
 import static java.util.Arrays.fill;
 
-public class Shake {
+public final class Shake {
     private static final int ROUNDS = 24;
 
     public static final int STATE_SIZE = 25;
@@ -52,6 +52,8 @@ public class Shake {
             0x0000000080000001L,
             0x8000000080008008L
     };
+
+    private Shake() { }
 
     private static long rotate(long x, int offset) {
         return ((x << offset) ^ (x >>> (64-offset)));

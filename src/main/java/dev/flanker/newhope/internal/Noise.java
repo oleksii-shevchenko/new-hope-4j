@@ -6,10 +6,12 @@ import dev.flanker.newhope.spec.NewHopeSpec;
 import java.security.SecureRandom;
 
 
-public class Noise {
+public final class Noise {
     private static int SEED_LENGTH = 32;
     private static int EXT_SEED_SIZE = 34;
     private static int BUFFER_SIZE = 128;
+
+    private Noise() { }
 
     public static int[] sample(byte[] seed, int nonce, NewHopeSpec spec) {
         return sample(seed, nonce, spec.q, spec.n);
