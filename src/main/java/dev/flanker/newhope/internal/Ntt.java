@@ -2,17 +2,20 @@ package dev.flanker.newhope.internal;
 
 import dev.flanker.newhope.spec.NewHopeSpec;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.Map;
 
 public final class Ntt {
     private static Map<NewHopeSpec, int[][]> PRECOMPUTED = Map.of(
-            NewHopeSpec.NEW_HOPE_512, precomputedNttCoefficient(NewHopeSpec.NEW_HOPE_512),
-            NewHopeSpec.NEW_HOPE_1024, precomputedNttCoefficient(NewHopeSpec.NEW_HOPE_1024)
+            NewHopeSpec.NEW_HOPE_512, loadTable("direct_512.csv", NewHopeSpec.NEW_HOPE_512),
+            NewHopeSpec.NEW_HOPE_1024, loadTable("direct_1024.csv", NewHopeSpec.NEW_HOPE_1024)
     );
 
     private static Map<NewHopeSpec, int[][]> INVERSE_PRECOMPUTED = Map.of(
-            NewHopeSpec.NEW_HOPE_512, precomputedInverseNttCoefficient(NewHopeSpec.NEW_HOPE_512),
-            NewHopeSpec.NEW_HOPE_1024, precomputedInverseNttCoefficient(NewHopeSpec.NEW_HOPE_1024)
+            NewHopeSpec.NEW_HOPE_512, loadTable("inverse_512.csv", NewHopeSpec.NEW_HOPE_512),
+            NewHopeSpec.NEW_HOPE_1024, loadTable("inverse_1024.csv", NewHopeSpec.NEW_HOPE_1024)
     );
 
     private Ntt() { }
@@ -48,6 +51,33 @@ public final class Ntt {
         return coefficient;
     }
 
+    private static int[][] loadTable(String name, NewHopeSpec spec) {
+        Module module = Ntt.class.getModule();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(module.getResourceAsStream(name)))) {
+            int[][] table = reader.lines()
+                    .map(line -> line.split(","))
+                    .peek(items -> {
+                        if (items.length != spec.n) {
+                            throw new RuntimeException("Resource is corrupted");
+                        }
+                    })
+                    .map(items -> Arrays.stream(items)
+                            .map(Integer::parseInt)
+                            .mapToInt(Integer::intValue)
+                            .toArray()
+                    )
+                    .toArray(int[][]::new);
+            if (table.length != spec.n) {
+                throw new RuntimeException("Resource is corrupted");
+            }
+            return table;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    /* For NTT coefficients pre-computation
+
     private static int pow(int x, int y, int q) {
         int z = 1;
         int amplitude = x;
@@ -63,6 +93,7 @@ public final class Ntt {
     private static int[][] precomputedNttCoefficient(NewHopeSpec spec) {
         int[][] precomputed = new int[spec.n][spec.n];
         for (int i = 0; i < spec.n; i++) {
+            System.out.println("i=" + i);
             for (int j = 0; j < spec.n; j++) {
                 int gammaPower = pow(spec.g, j, spec.q);
                 int omegaPower = pow(spec.w, i * j, spec.q);
@@ -75,6 +106,7 @@ public final class Ntt {
     private static int[][] precomputedInverseNttCoefficient(NewHopeSpec spec) {
         int[][] precomputed = new int[spec.n][spec.n];
         for (int i = 0; i < spec.n; i++) {
+            System.out.println("i=" + i);
             for (int j = 0; j < spec.n; j++) {
                 int gammaPower = pow(spec.invG, i, spec.q);
                 int omegaPower = pow(spec.invW, i * j, spec.q);
@@ -84,4 +116,5 @@ public final class Ntt {
         }
         return precomputed;
     }
+    */
 }

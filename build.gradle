@@ -1,9 +1,16 @@
 plugins {
     id 'java-library'
+    id 'idea'
 }
 
 repositories {
     jcenter()
+}
+
+idea {
+    module {
+        inheritOutputDirs = true
+    }
 }
 
 dependencies {
