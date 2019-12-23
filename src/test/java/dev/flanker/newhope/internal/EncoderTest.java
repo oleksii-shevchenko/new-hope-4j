@@ -47,4 +47,21 @@ class EncoderTest {
 
         assertArrayEquals(message, Encoder.decodeMessage(Encoder.encodeMessage(message, spec), spec));
     }
+
+    @Test
+    public void compressConsistencyTest() {
+        int[] poly = ThreadLocalRandom.current()
+                .ints()
+                .filter(i -> i >= 0)
+                .map(i -> i % spec.q)
+                .limit(spec.n)
+                .toArray();
+
+        int[] decompressed = Encoder.decompress(Encoder.compress(poly, spec), spec);
+
+        for (int i =0; i < poly.length; i++) {
+            System.out.println(poly[i] - decompressed[i]);
+        }
+
+    }
 }

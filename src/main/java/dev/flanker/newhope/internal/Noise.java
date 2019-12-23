@@ -33,10 +33,9 @@ public final class Noise {
             for (int j = 0; j < 64; j++) {
                 int a = buffer[2 * j    ];
                 int b = buffer[2 * j + 1];
-                r[64 * i + j] = Integer.remainderUnsigned(Poly.hw(a) + q - Poly.hw(b), q);
+                r[64 * i + j] = Integer.remainderUnsigned(Poly.restrictedHw(a) + q - Poly.restrictedHw(b), q);
             }
         }
-
         return r;
     }
 

@@ -64,18 +64,21 @@ public final class Poly {
                 for (int j = 0; j < Shake.SHAKE128_RATE && counter < 64; j += 2) {
                     int val = Byte.toUnsignedInt(buffer[j]) | (Byte.toUnsignedInt(buffer[j + 1]) << 8);
                     if (val < 5 * spec.q) {
-                        a[64 * i + counter] = val;
+                        a[64 * i + counter] = Integer.remainderUnsigned(val, spec.q);
                         counter++;
                     }
                 }
             }
         }
-
         return a;
     }
 
     static int hw(int x) {
         return Integer.bitCount(x);
+    }
+
+    static int restrictedHw(int x) {
+        return Integer.bitCount(x & 0xFF);
     }
 
     private static int bitsReverse(int x, int length) {
