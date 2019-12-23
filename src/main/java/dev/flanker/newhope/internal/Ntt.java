@@ -76,7 +76,7 @@ public final class Ntt {
         }
     }
 
-    /* For NTT coefficients pre-computation
+    // For NTT coefficients pre-computation
 
     private static int pow(int x, int y, int q) {
         int z = 1;
@@ -116,5 +116,4 @@ public final class Ntt {
         }
         return precomputed;
     }
-    */
 }

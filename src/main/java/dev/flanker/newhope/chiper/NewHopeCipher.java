@@ -149,7 +149,7 @@ public class NewHopeCipher implements Cipher {
         int[] eImage = Ntt.direct(e, spec);
         int[] bImage = Poly.add(Poly.scalarMultiplication(aImage, sImage, spec.q), eImage, spec.q);
 
-        return new KeyPair(Encoder.encodePublicKey(bImage, publicSeed, spec), Encoder.encodePolynomial(s, spec));
+        return new KeyPair(Encoder.encodePolynomial(s, spec), Encoder.encodePublicKey(bImage, publicSeed, spec));
     }
 
     @Override

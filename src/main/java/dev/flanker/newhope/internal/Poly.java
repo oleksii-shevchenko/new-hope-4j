@@ -38,7 +38,11 @@ public final class Poly {
         checkLength(x, y);
         int[] z = new int[x.length];
         for (int i = 0; i < z.length; i++) {
-            z[i] = Integer.remainderUnsigned(x[i] - y[i], q);
+            if (x[i] >= y[i]) {
+                z[i] = Integer.remainderUnsigned(x[i] - y[i], q);
+            } else {
+                z[i] = Integer.remainderUnsigned(x[i] + q - y[i], q);
+            }
         }
         return z;
     }

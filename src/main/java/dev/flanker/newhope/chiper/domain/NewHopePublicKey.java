@@ -20,4 +20,20 @@ public class NewHopePublicKey implements PublicKey {
     public byte[] publicSeed() {
         return publicSeed;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        NewHopePublicKey that = (NewHopePublicKey) o;
+        return Arrays.equals(b, that.b) &&
+                Arrays.equals(publicSeed, that.publicSeed);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Arrays.hashCode(b);
+        result = 31 * result + Arrays.hashCode(publicSeed);
+        return result;
+    }
 }

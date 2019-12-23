@@ -6,6 +6,8 @@ import dev.flanker.newhope.spec.NewHopeSpec;
 
 import java.util.Arrays;
 
+import static java.lang.Byte.toUnsignedInt;
+
 public final class Encoder {
     private static final int MESSAGE_LENGTH = 32;
     public static final int PUBLIC_SEED_LENGTH = 32;
@@ -34,10 +36,10 @@ public final class Encoder {
     public static int[] decodePolynomial(byte[] v, NewHopeSpec spec) {
         int[] r = new int[spec.n];
         for (int i = 0; i < (spec.n >>> 2); i++) {
-            r[4 * i    ] = (Byte.toUnsignedInt(v[7 * i])          ) | ((Byte.toUnsignedInt(v[7 * i + 1]) & 0x3f) << 8);
-            r[4 * i + 1] = (Byte.toUnsignedInt(v[7 * i + 1]) >>> 6) | (Byte.toUnsignedInt(v[7 * i + 2]) << 2) | ((Byte.toUnsignedInt(v[7 * i + 3]) & 0x3f) << 10);
-            r[4 * i + 2] = (Byte.toUnsignedInt(v[7 * i + 3]) >>> 4) | (Byte.toUnsignedInt(v[7 * i + 4]) << 4) | ((Byte.toUnsignedInt(v[7 * i + 5]) & 0x03) << 12);
-            r[4 * i + 3] = (Byte.toUnsignedInt(v[7 * i + 5]) >>> 2) | (Byte.toUnsignedInt(v[7 * i + 6]) << 6);
+            r[4 * i    ] = (toUnsignedInt(v[7 * i])          ) | ((toUnsignedInt(v[7 * i + 1]) & 0x3f) << 8);
+            r[4 * i + 1] = (toUnsignedInt(v[7 * i + 1]) >>> 6) | (toUnsignedInt(v[7 * i + 2]) << 2) | ((toUnsignedInt(v[7 * i + 3]) & 0x0f) << 10);
+            r[4 * i + 2] = (toUnsignedInt(v[7 * i + 3]) >>> 4) | (toUnsignedInt(v[7 * i + 4]) << 4) | ((toUnsignedInt(v[7 * i + 5]) & 0x03) << 12);
+            r[4 * i + 3] = (toUnsignedInt(v[7 * i + 5]) >>> 2) | (toUnsignedInt(v[7 * i + 6]) << 6);
         }
         return r;
     }
@@ -68,7 +70,7 @@ public final class Encoder {
         int[] v = new int[spec.n];
         for (int i = 0; i < 32; i++) {
             for (int j = 0; j < 8; j++) {
-                int value = (-((message[i] >>> j) & 1)) & (spec.q >>> 1) ;
+                int value = (-((message[i] >>> j) & 0x1)) & (spec.q >>> 1);
                 v[8 * i + j] = value;
                 v[8 * i + j + 256] = value;
                 if (spec.n == 1024) {
@@ -82,35 +84,36 @@ public final class Encoder {
 
     public static byte[] decodeMessage(int[] poly, NewHopeSpec spec) {
         byte[] message = new byte[MESSAGE_LENGTH];
-        int subtraction = (spec.q - 1) >>> 1;
         for (int i = 0; i < 256; i++) {
-            int t = Math.abs(Integer.remainderUnsigned(poly[i      ], spec.q) - subtraction) +
-                    Math.abs(Integer.remainderUnsigned(poly[i + 256], spec.q) - subtraction);
+            int t = flipAbs(poly[i], spec) + flipAbs(poly[i + 256], spec);
             if (spec.n == 1024) {
-                t += Math.abs(Integer.remainderUnsigned(poly[i + 512], spec.q) - subtraction) +
-                        Math.abs(Integer.remainderUnsigned(poly[i + 768], spec.q) - subtraction) - spec.q;
+                t = flipAbs(poly[i + 512], spec) + flipAbs(poly[i + 768], spec);
+                t = t - spec.q;
             } else {
-                t -= (spec.q >>> 1);
+                t = t - (spec.q >>> 1);
             }
-            t = t >>> 15;
-            message[i >>> 3] = (byte) (message[i >>> 3] | (t << (i & 7)));
+            t = Integer.remainderUnsigned(t, 0xFFFF);
+            message[i >>> 3] = (byte) (toUnsignedInt(message[i >>> 3]) | ((t >>> 15) << (i & 7)));
         }
         return message;
     }
 
+    private static int flipAbs(int x, NewHopeSpec spec) {
+        return Math.abs(Integer.remainderUnsigned(x, spec.q) - (spec.q >>> 1));
+    }
+
     public static byte[] compress(int[] poly, NewHopeSpec spec) {
         int k = 0;
-        byte[] temp = new byte[8];
+        int[] temp = new int[8];
         byte[] h = new byte[hLength(spec)];
-        for (int l = 0; l < (spec.n >>> 3); l++) {
-            int i = l << 3;
+        for (int i = 0; i < spec.n; i += 8) {
             for (int j = 0; j < 8; j++) {
-                temp[j] = (byte) (Integer.remainderUnsigned(poly[i + j], spec.q) << 3);
-                temp[j] = (byte) (Integer.divideUnsigned(Byte.toUnsignedInt(temp[j]) + (spec.q >>> 1), spec.q) & 7);
+                temp[j] = (Integer.remainderUnsigned(poly[i + j], spec.q));
+                temp[j] = Integer.divideUnsigned((temp[j] << 3) + (spec.q >>> 1), spec.q) & 7;
             }
             h[k    ] = (byte) (temp[0] | (temp[1] << 3) | (temp[2] << 6));
-            h[k + 1] = (byte) ((Byte.toUnsignedInt(temp[2]) >>> 2) | (temp[3] << 1) | (temp[4] << 4) | (temp[5] << 7));
-            h[k + 2] = (byte) ((Byte.toUnsignedInt(temp[5]) >>> 1) | (temp[6] << 2) | (temp[7] << 5));
+            h[k + 1] = (byte) ((temp[2] >>> 2) | (temp[3] << 1) | (temp[4] << 4) | (temp[5] << 7));
+            h[k + 2] = (byte) ((temp[5] >>> 1) | (temp[6] << 2) | (temp[7] << 5));
             k += 3;
         }
         return h;
@@ -121,14 +124,14 @@ public final class Encoder {
         int[] r = new int[spec.n];
         for (int l = 0; l < (spec.n >>> 3); l++) {
             int i = l << 3;
-            r[i    ] = h[k] & 7;
-            r[i + 1] = (Byte.toUnsignedInt(h[k]) >>> 3) & 7;
-            r[i + 2] = (Byte.toUnsignedInt(h[k]) >>> 6) | ((Byte.toUnsignedInt(h[k + 1]) << 2) & 4);
-            r[i + 3] = (Byte.toUnsignedInt(h[k + 1]) >>> 1) & 7;
-            r[i + 4] = (Byte.toUnsignedInt(h[k + 1]) >>> 4) & 7;
-            r[i + 5] = (Byte.toUnsignedInt(h[k + 1]) >>> 7) | ((Byte.toUnsignedInt(h[k + 2]) << 1) & 6);
-            r[i + 6] = (Byte.toUnsignedInt(h[k + 2]) >>> 2) & 7;
-            r[i + 7] = (Byte.toUnsignedInt(h[k + 2]) >>> 5);
+            r[i    ] = toUnsignedInt(h[k]) & 7;
+            r[i + 1] = (toUnsignedInt(h[k]) >>> 3) & 7;
+            r[i + 2] = (toUnsignedInt(h[k]) >>> 6) | ((toUnsignedInt(h[k + 1]) << 2) & 4);
+            r[i + 3] = (toUnsignedInt(h[k + 1]) >>> 1) & 7;
+            r[i + 4] = (toUnsignedInt(h[k + 1]) >>> 4) & 7;
+            r[i + 5] = (toUnsignedInt(h[k + 1]) >>> 7) | ((toUnsignedInt(h[k + 2]) << 1) & 6);
+            r[i + 6] = (toUnsignedInt(h[k + 2]) >>> 2) & 7;
+            r[i + 7] = (toUnsignedInt(h[k + 2]) >>> 5);
             k += 3;
             for (int j = 0; j < 8; j++) {
                 r[i + j] = Integer.remainderUnsigned((r[i + j] * spec.q + 4) >>> 3, spec.q);
