@@ -5,7 +5,6 @@ import dev.flanker.newhope.spec.NewHopeSpec;
 import org.junit.jupiter.api.Test;
 
 import java.security.SecureRandom;
-import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -17,16 +16,13 @@ class NewHopeCipherTest {
         KeyPair keyPair = cipher.generateKeyPair();
         cipher.dualMode(keyPair);
 
-        byte[] b = new byte[32];
-        ThreadLocalRandom.current().nextBytes(b);
+        byte[] message = new byte[32];
+        ThreadLocalRandom.current().nextBytes(message);
 
-        byte[] encrypt = cipher.encrypt(b);
+        byte[] encrypt = cipher.encrypt(message);
         byte[] decrypt = cipher.decrypt(encrypt);
 
-        System.out.println(Arrays.toString(b));
-        System.out.println(Arrays.toString(decrypt));
-
-        assertArrayEquals(b, decrypt);
+        assertArrayEquals(message, decrypt);
     }
 
 }

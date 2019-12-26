@@ -42,7 +42,7 @@ class NttTest {
         int[] imX = Ntt.direct(x, spec);
         int[] imY = Ntt.direct(y, spec);
 
-        int[] res = Ntt.inverse(Poly.scalarMultiplication(imX, imY, spec.q), spec);
+        int[] res = Ntt.inverse(Poly.pointwiseMultiplication(imX, imY, spec.q), spec);
 
         assertArrayEquals(z, res);
     }

@@ -1,6 +1,7 @@
 package dev.flanker.newhope.internal;
 
 import dev.flanker.newhope.chiper.domain.NewHopePublicKey;
+import dev.flanker.newhope.internal.domain.DecodedCiphertext;
 import dev.flanker.newhope.spec.NewHopeSpec;
 import org.junit.jupiter.api.Test;
 
@@ -38,6 +39,30 @@ class EncoderTest {
         NewHopePublicKey pk = new NewHopePublicKey(poly, publicSeed);
 
         assertEquals(pk, Encoder.decodePublicKey(Encoder.encodePublicKey(pk, spec), spec));
+    }
+
+    @Test
+    public void ciphertextEncodingTest() {
+        int[] poly = ThreadLocalRandom.current()
+                .ints()
+                .filter(i -> i >= 0)
+                .map(i -> i % spec.q)
+                .limit(spec.n)
+                .toArray();
+
+        int[] compressed = ThreadLocalRandom.current()
+                .ints()
+                .filter(i -> i >= 0)
+                .map(i -> i % spec.q)
+                .limit(spec.n)
+                .toArray();
+
+        byte[] h = Encoder.compress(compressed, spec);
+
+        DecodedCiphertext decodedCiphertext = Encoder.decodeCihpertext(Encoder.encodeCiphertext(poly, h, spec), spec);
+
+        assertArrayEquals(poly, decodedCiphertext.getPoly());
+        assertArrayEquals(h, decodedCiphertext.getH());
     }
 
     @Test

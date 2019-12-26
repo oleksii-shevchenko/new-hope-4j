@@ -108,8 +108,9 @@ public final class Encoder {
         byte[] h = new byte[hLength(spec)];
         for (int i = 0; i < spec.n; i += 8) {
             for (int j = 0; j < 8; j++) {
-                temp[j] = (Integer.remainderUnsigned(poly[i + j], spec.q));
-                temp[j] = Integer.divideUnsigned((temp[j] << 3) + (spec.q >>> 1), spec.q) & 7;
+                temp[j] = Integer.remainderUnsigned(poly[i + j], spec.q);
+                temp[j] = (temp[j] << 3) + (spec.q >>> 1);
+                temp[j] = Integer.divideUnsigned(temp[j], spec.q) & 7;
             }
             h[k    ] = (byte) (temp[0] | (temp[1] << 3) | (temp[2] << 6));
             h[k + 1] = (byte) ((temp[2] >>> 2) | (temp[3] << 1) | (temp[4] << 4) | (temp[5] << 7));

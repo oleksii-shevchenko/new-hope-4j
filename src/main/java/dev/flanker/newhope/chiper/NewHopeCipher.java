@@ -93,45 +93,6 @@ public class NewHopeCipher implements Cipher {
     }
 
     @Override
-    public byte[] encrypt(byte[] message) {
-        if (mode == CipherMode.DECRYPTION) {
-            throw new RuntimeException("Wrong mode");
-        }
-
-        checkLength(message.length, 32);
-
-        byte[] coin = new byte[32];
-        secureRandom.nextBytes(coin);
-
-        int[] aImage = Poly.genA(publicKey.publicSeed(), spec);
-        int[] eImage = Ntt.direct(Poly.polyBitReverse(Noise.sample(coin, 1, spec), spec), spec);
-
-        int[] s = Poly.polyBitReverse(Noise.sample(coin, 0, spec), spec);
-        int[] error = Noise.sample(coin, 2, spec);
-
-        int[] tImage = Ntt.direct(s, spec);
-        int[] uImage = Poly.add(Poly.scalarMultiplication(aImage, tImage, spec.q), eImage, spec.q);
-
-        int[] v = Encoder.encodeMessage(message, spec);
-        int[] d = Ntt.inverse(Poly.scalarMultiplication(publicKey.b(), tImage, spec.q), spec);
-        int[] p = Poly.add(Poly.add(v, error, spec.q), d, spec.q);
-        byte[] h = Encoder.compress(p, spec);
-        return Encoder.encodeCiphertext(uImage, h, spec);
-    }
-
-    @Override
-    public byte[] decrypt(byte[] ciphertext) {
-        if (mode == CipherMode.ENCRYPTION) {
-            throw new RuntimeException("Wrong mode");
-        }
-
-        DecodedCiphertext decodedCiphertext = Encoder.decodeCihpertext(ciphertext, spec);
-        int[] v = Encoder.decompress(decodedCiphertext.getH(), spec);
-        int[] t = Ntt.inverse(Poly.scalarMultiplication(decodedCiphertext.getPoly(), privateKey.s(), spec.q), spec);
-        return Encoder.decodeMessage(Poly.subtract(v, t, spec.q), spec);
-    }
-
-    @Override
     public KeyPair generateKeyPair() {
         byte[] seed = Noise.randomBytes(secureRandom, NOISE_LENGTH);
 
@@ -147,9 +108,61 @@ public class NewHopeCipher implements Cipher {
         int[] aImage = Poly.genA(publicSeed, spec);
         int[] sImage = Ntt.direct(s, spec);
         int[] eImage = Ntt.direct(e, spec);
-        int[] bImage = Poly.add(Poly.scalarMultiplication(aImage, sImage, spec.q), eImage, spec.q);
+
+        int[] bImage = Poly.add(Poly.pointwiseMultiplication(aImage, sImage, spec.q), eImage, spec.q);
 
         return new KeyPair(Encoder.encodePolynomial(s, spec), Encoder.encodePublicKey(bImage, publicSeed, spec));
+    }
+
+    @Override
+    public byte[] encrypt(byte[] message) {
+        if (mode == CipherMode.DECRYPTION) {
+            throw new RuntimeException("Wrong mode");
+        }
+
+        checkLength(message.length, 32);
+
+        byte[] coin = Noise.randomBytes(secureRandom, 32);
+
+        int[] aHat = Poly.genA(publicKey.publicSeed(), spec);
+
+        int[] sPrime = Noise.sample(coin, 0, spec);
+        int[] ePrime = Noise.sample(coin, 1, spec);
+        int[] ePrimePrime = Noise.sample(coin, 2, spec);
+
+        int[] tHat = Ntt.direct(sPrime, spec);
+
+        int[] uHat = Poly.pointwiseMultiplication(aHat, tHat, spec.q);
+        uHat = Poly.add(uHat, Ntt.direct(ePrime, spec), spec.q);
+
+        int[] v = Encoder.encodeMessage(message, spec);
+
+        int[] vPrime = Poly.pointwiseMultiplication(publicKey.b(), tHat, spec.q);
+        vPrime = Ntt.inverse(vPrime, spec);
+        vPrime = Poly.add(vPrime, ePrimePrime, spec.q);
+        vPrime = Poly.add(vPrime, v, spec.q);
+
+        byte[] h = Encoder.compress(vPrime, spec);
+
+        return Encoder.encodeCiphertext(uHat, h, spec);
+    }
+
+    @Override
+    public byte[] decrypt(byte[] ciphertext) {
+        if (mode == CipherMode.ENCRYPTION) {
+            throw new RuntimeException("Wrong mode");
+        }
+
+        DecodedCiphertext decodedCiphertext = Encoder.decodeCihpertext(ciphertext, spec);
+
+        int[] vPrime = Encoder.decompress(decodedCiphertext.getH(), spec);
+
+        int[] tPrime = Poly.pointwiseMultiplication(decodedCiphertext.getPoly(), privateKey.s(), spec.q);
+        tPrime = Ntt.inverse(tPrime, spec);
+
+        vPrime = Poly.subtract(vPrime, tPrime, spec.q);
+
+        return Encoder.decodeMessage(vPrime, spec);
     }
 
     @Override

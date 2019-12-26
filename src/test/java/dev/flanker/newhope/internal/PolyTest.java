@@ -16,5 +16,4 @@ class PolyTest {
         ThreadLocalRandom.current().nextBytes(publicSeed);
         assertArrayEquals(Poly.genA(publicSeed, spec), Poly.genA(publicSeed, spec));
     }
-
 }

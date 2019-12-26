@@ -16,7 +16,7 @@ public final class Poly {
         return reverse;
     }
 
-    public static int[] scalarMultiplication(int[] x, int[] y, int q) {
+    public static int[] pointwiseMultiplication(int[] x, int[] y, int q) {
         checkLength(x, y);
         int[] z = new int[x.length];
         for (int i = 0; i < z.length; i++) {
