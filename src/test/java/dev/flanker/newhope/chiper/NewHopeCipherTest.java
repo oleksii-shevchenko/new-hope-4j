@@ -24,5 +24,4 @@ class NewHopeCipherTest {
 
         assertArrayEquals(message, decrypt);
     }
-
 }

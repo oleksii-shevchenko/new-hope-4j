@@ -105,13 +105,13 @@ public class NewHopeCipher implements Cipher {
         int[] s = Poly.polyBitReverse(Noise.sample(noiseSeed, 0, spec), spec);
         int[] e = Poly.polyBitReverse(Noise.sample(noiseSeed, 1, spec), spec);
 
-        int[] aImage = Poly.genA(publicSeed, spec);
-        int[] sImage = Ntt.direct(s, spec);
-        int[] eImage = Ntt.direct(e, spec);
+        int[] aHat = Poly.genA(publicSeed, spec);
+        int[] sHat = Ntt.direct(s, spec);
+        int[] eHat = Ntt.direct(e, spec);
 
-        int[] bImage = Poly.add(Poly.pointwiseMultiplication(aImage, sImage, spec.q), eImage, spec.q);
+        int[] bHat = Poly.add(Poly.pointwiseMultiplication(aHat, sHat, spec.q), eHat, spec.q);
 
-        return new KeyPair(Encoder.encodePolynomial(s, spec), Encoder.encodePublicKey(bImage, publicSeed, spec));
+        return new KeyPair(Encoder.encodePolynomial(sHat, spec), Encoder.encodePublicKey(bHat, publicSeed, spec));
     }
 
     @Override
